@@ -88,7 +88,7 @@ def parse_status(homework):
             verdict = HOMEWORK_STATUSES.get(homework_status)
             return (
                 f'Изменился статус проверки работы "{homework_name}".{verdict}'
-                )
+            )
         else:
             logger.error('Несуществующий статус проверки работы.')
             raise exceptions.StatusKeyException
