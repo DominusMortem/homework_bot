@@ -8,19 +8,18 @@ from http import HTTPStatus
 
 import requests
 import telegram
-
+from telegram.error import TelegramError
 
 import exceptions
-from config import PRACTICUM_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_TOKEN
+from config import (
+    RETRY_TIME,
+    PRACTICUM_TOKEN,
+    TELEGRAM_CHAT_ID,
+    TELEGRAM_TOKEN,
+    ENDPOINT,
+    HEADERS
+)
 
-
-RETRY_TIME = 600
-ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
-HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
-
-logger = logging.getLogger(__name__)
-handler = RotatingFileHandler('stdout', maxBytes=50000000, backupCount=5)
-logger.addHandler(handler)
 
 HOMEWORK_STATUSES = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
@@ -28,13 +27,17 @@ HOMEWORK_STATUSES = {
     'rejected': 'Работа проверена: у ревьюера есть замечания.'
 }
 
+logger = logging.getLogger(__name__)
+handler = RotatingFileHandler('stdout', maxBytes=50000000, backupCount=5)
+logger.addHandler(handler)
+
 
 def send_message(bot, message):
     """Функция отправления сообщения в Телеграм."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
         logger.info(f'Сообщение: "{message}" - успешно отправлено')
-    except Exception as error:
+    except TelegramError as error:
         logger.error(f'Ошибка отправки сообщения в телеграмм: {error}')
 
 
@@ -54,10 +57,8 @@ def get_api_answer(current_timestamp):
 def check_response(response):
     """Проверка полученных данных о домашней работе."""
     if not isinstance(response, dict):
-        raise TypeError
-    try:
-        response['homeworks']
-    except KeyError:
+        raise TypeError('Полученный объект не является словарем.')
+    if response.get('homeworks') is None:
         logger.error('Ключ "homeworks" отсутствует.')
         raise exceptions.HomeworksKeyException
     if not isinstance(response.get('homeworks'), list):
@@ -117,7 +118,7 @@ def main():
                     last_status[id] = last_status.get(id, message)
                 else:
                     logger.info('Обновлений статуса не поступало.')
-            current_timestamp = int(time.time())
+            current_timestamp = response.get('current_date', int(time.time()))
         except Exception as error:
             if type(error) != type(last_error):
                 message = f'Сбой в работе программы: {error}'
