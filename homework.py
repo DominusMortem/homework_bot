@@ -104,7 +104,7 @@ def main():
     current_timestamp = int(time.time())
     if not check_tokens():
         logger.critical('Отсутствуют переменные окружения!')
-        raise sys.exit(1)
+        raise sys.exit('Завершение работы.')
     while True:
         try:
             response = get_api_answer(current_timestamp)
