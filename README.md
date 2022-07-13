@@ -39,13 +39,10 @@ python homework.py
 
 ```
 Python==3.7
-Django==2.2.16
-pytest==6.2.4
-pytest-pythonpath==0.7.3
-pytest-django==4.4.0
-djangorestframework==3.12.4
-djangorestframework-simplejwt==4.7.2
-Pillow==8.3.1
-PyJWT==2.1.0
+flake8==3.9.2
+flake8-docstrings==1.6.0
+pytest==6.2.5
+python-dotenv==0.19.0
+python-telegram-bot==13.7
 requests==2.26.0
 ```
